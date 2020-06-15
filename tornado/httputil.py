@@ -296,7 +296,8 @@ class HTTPServerRequest(object):
 
     .. attribute:: host
 
-       The requested hostname, usually taken from the ``Host`` header.
+       The requested hostname, usually taken from the ``X-Forwarded-Host``
+       or the ``Host`` header.
 
     .. attribute:: arguments
 
@@ -369,7 +370,12 @@ class HTTPServerRequest(object):
         self.remote_ip = getattr(context, "remote_ip", None)
         self.protocol = getattr(context, "protocol", "http")
 
-        self.host = host or self.headers.get("Host") or "127.0.0.1"
+        self.host = (
+            host
+            or self.headers.get("X-Forwarded-Host")
+            or self.headers.get("Host")
+            or "127.0.0.1"
+        )
         self.host_name = split_host_and_port(self.host.lower())[0]
         self.files = files or {}
         self.connection = connection

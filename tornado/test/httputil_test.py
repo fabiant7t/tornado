@@ -436,6 +436,41 @@ class HTTPServerRequestTest(unittest.TestCase):
         )
         self.assertTrue("Canary" not in repr(request))
 
+    def test_host_set_through_constructor(self):
+        request = HTTPServerRequest(
+            uri="/",
+            host="www.tornadoweb.org",
+            headers=HTTPHeaders({
+                "Host": "www2.tornadoweb.com"
+            })
+        )
+        self.assertEqual(request.host, "www.tornadoweb.org")
+
+    def test_host_parsed_from_x_forwarded_host_header(self):
+        request = HTTPServerRequest(
+            uri="/",
+            headers=HTTPHeaders({
+                "Host": "www.myreverseproxy.com",
+                "X-Forwarded-Host": "www.tornadoweb.org"
+            })
+        )
+        self.assertEqual(request.host, "www.tornadoweb.org")
+
+    def test_host_parsed_from_host_header(self):
+        request = HTTPServerRequest(
+            uri="/",
+            headers=HTTPHeaders({
+                "Host": "www.tornadoweb.org"
+            })
+        )
+        self.assertEqual(request.host, "www.tornadoweb.org")
+
+    def test_host_fallback(self):
+        request = HTTPServerRequest(
+            uri="/",
+        )
+        self.assertEqual(request.host, "127.0.0.1")
+
 
 class ParseRequestStartLineTest(unittest.TestCase):
     METHOD = "GET"
